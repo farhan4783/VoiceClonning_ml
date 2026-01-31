@@ -1,0 +1,135 @@
+.voice-recorder {
+    padding: var(--spacing-xl);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.recorder-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.recorder-header h3 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.recorder-header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.recorder-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.record-btn {
+    font-size: 1.25rem;
+    padding: 1.5rem 3rem;
+    margin: 0 auto;
+}
+
+.recording-active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-lg);
+}
+
+.pulse-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--error);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.recording-time {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+    color: var(--error);
+}
+
+.recording-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.playback-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.waveform-container {
+    background: rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+}
+
+.waveform {
+    width: 100%;
+}
+
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.duration {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    min-width: 60px;
+    text-align: center;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--glass-border);
+}
+
+@media (max-width: 768px) {
+    .voice-recorder {
+        padding: var(--spacing-md);
+    }
+
+    .record-btn {
+        font-size: 1rem;
+        padding: 1.25rem 2rem;
+    }
+
+    .recording-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .recording-buttons .btn {
+        width: 100%;
+    }
+
+    .playback-controls {
+        flex-wrap: wrap;
+    }
+}
