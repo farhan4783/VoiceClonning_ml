@@ -252,6 +252,6 @@ For issues, questions, or suggestions, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ using cutting-edge AI technology**
+**Built with ❤️**
 
 © 2026 VoiceClone Studio | Powered by Coqui TTS
