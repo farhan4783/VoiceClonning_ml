@@ -4,15 +4,16 @@ import numpy as np
 from scipy.signal import butter, filtfilt
 import os
 from pathlib import Path
+from typing import Tuple, Dict, Any
 
 
 class AudioProcessor:
     """Utility class for audio processing operations"""
     
-    def __init__(self, sample_rate=22050):
+    def __init__(self, sample_rate: int = 22050):
         self.sample_rate = sample_rate
     
-    def load_audio(self, file_path: str, target_sr: int = None) -> tuple:
+    def load_audio(self, file_path: str, target_sr: int = None) -> Tuple[np.ndarray, int]:
         """
         Load audio file and return waveform and sample rate
         
@@ -29,7 +30,7 @@ class AudioProcessor:
         audio, sr = librosa.load(file_path, sr=target_sr, mono=True)
         return audio, sr
     
-    def save_audio(self, audio_data: np.ndarray, output_path: str, sample_rate: int = None):
+    def save_audio(self, audio_data: np.ndarray, output_path: str, sample_rate: int = None) -> None:
         """
         Save audio data to file
         
@@ -140,7 +141,7 @@ class AudioProcessor:
         trimmed, _ = librosa.effects.trim(audio, top_db=top_db)
         return trimmed
     
-    def validate_audio_quality(self, audio: np.ndarray, min_duration: float = 1.0) -> dict:
+    def validate_audio_quality(self, audio: np.ndarray, min_duration: float = 1.0) -> Dict[str, Any]:
         """
         Validate audio quality and return metrics
         
@@ -158,14 +159,14 @@ class AudioProcessor:
         # Calculate SNR estimate
         noise_estimate = np.std(audio[:int(0.1 * self.sample_rate)])  # First 100ms
         signal_estimate = np.std(audio)
-        snr = 20 * np.log10(signal_estimate / (noise_estimate + 1e-10))
+        snr_value = 20 * np.log10(signal_estimate / (noise_estimate + 1e-10))
         
         validation = {
             "is_valid": True,
             "duration": duration,
             "rms": float(rms),
             "peak": float(peak),
-            "snr_db": float(snr),
+            "snr_db": float(snr_value),
             "issues": []
         }
         
@@ -180,7 +181,7 @@ class AudioProcessor:
         if peak > 0.99:
             validation["issues"].append("Audio may be clipping")
         
-        if snr < 10:
+        if snr_value < 10:
             validation["issues"].append("Low signal-to-noise ratio")
         
         return validation

@@ -1,23 +1,17 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import Optional, List
-import os
+from typing import Optional
 import shutil
-from pathlib import Path
 import logging
 from datetime import datetime
 import uvicorn
-from dotenv import load_dotenv
 
+from config import settings
 from tts_engine import TTSEngine
 from voice_cloner import VoiceCloner
 from utils.audio_utils import AudioProcessor
-
-# Load environment variables
-load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,35 +19,23 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="VoiceClone Studio API",
-    description="Real-time voice cloning and synthesis API",
-    version="1.0.0"
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION
 )
 
 # CORS configuration
-origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize directories
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./uploads"))
-MODELS_DIR = Path(os.getenv("MODELS_DIR", "./models"))
-OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "./outputs"))
-
-for directory in [UPLOAD_DIR, MODELS_DIR, OUTPUT_DIR]:
-    directory.mkdir(parents=True, exist_ok=True)
-
 # Initialize components
-use_gpu = os.getenv("USE_GPU", "False").lower() == "true"
-tts_engine = TTSEngine(use_gpu=use_gpu)
-voice_cloner = VoiceCloner(models_dir=str(MODELS_DIR))
-audio_processor = AudioProcessor()
+tts_engine = TTSEngine(use_gpu=settings.USE_GPU)
+voice_cloner = VoiceCloner(models_dir=str(settings.MODELS_DIR))
+audio_processor = AudioProcessor(sample_rate=settings.SAMPLE_RATE)
 
 # Pydantic models
 class SynthesisRequest(BaseModel):
@@ -72,20 +54,24 @@ class ModelUpdateRequest(BaseModel):
 async def root():
     """Root endpoint"""
     return {
-        "message": "VoiceClone Studio API",
-        "version": "1.0.0",
+        "message": settings.APP_NAME,
+        "version": settings.APP_VERSION,
         "status": "running"
     }
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    model_info = tts_engine.get_model_info()
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "tts_engine": model_info
-    }
+    try:
+        model_info = tts_engine.get_model_info()
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "tts_engine": model_info
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=500, detail="Health check failed")
 
 @app.post("/upload-voice")
 async def upload_voice(
@@ -113,7 +99,7 @@ async def upload_voice(
         
         # Save uploaded file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_path = UPLOAD_DIR / f"{timestamp}_{file.filename}"
+        file_path = settings.UPLOAD_DIR / f"{timestamp}_{file.filename}"
         
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -163,7 +149,7 @@ async def synthesize_speech(request: SynthesisRequest):
         # Generate output filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"synthesis_{timestamp}.wav"
-        output_path = OUTPUT_DIR / output_filename
+        output_path = settings.OUTPUT_DIR / output_filename
         
         # Get reference audio if model specified
         speaker_wav = None
@@ -271,7 +257,7 @@ async def delete_model(model_id: str):
 @app.get("/audio/{filename}")
 async def get_audio(filename: str):
     """Serve generated audio files"""
-    file_path = OUTPUT_DIR / filename
+    file_path = settings.OUTPUT_DIR / filename
     
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Audio file not found")
@@ -290,15 +276,11 @@ async def get_tts_info():
 
 # Run server
 if __name__ == "__main__":
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", 8000))
-    reload = os.getenv("RELOAD", "True").lower() == "true"
-    
-    logger.info(f"Starting VoiceClone Studio API on {host}:{port}")
+    logger.info(f"Starting {settings.APP_NAME} on {settings.HOST}:{settings.PORT}")
     
     uvicorn.run(
         "main:app",
-        host=host,
-        port=port,
-        reload=reload
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=settings.RELOAD
     )

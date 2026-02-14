@@ -1,9 +1,8 @@
-import os
 import json
 import shutil
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import logging
 from utils.audio_utils import AudioProcessor
 
@@ -30,7 +29,7 @@ class VoiceCloner:
         # Load or initialize metadata
         self.metadata = self._load_metadata()
     
-    def _load_metadata(self) -> Dict:
+    def _load_metadata(self) -> Dict[str, Any]:
         """Load models metadata from file"""
         if self.metadata_file.exists():
             try:
@@ -41,7 +40,7 @@ class VoiceCloner:
                 return {"models": {}}
         return {"models": {}}
     
-    def _save_metadata(self):
+    def _save_metadata(self) -> None:
         """Save models metadata to file"""
         try:
             with open(self.metadata_file, 'w') as f:
@@ -54,7 +53,7 @@ class VoiceCloner:
         audio_path: str,
         model_name: str,
         description: str = ""
-    ) -> Dict:
+    ) -> Dict[str, Any]:
         """
         Create a new voice model from audio sample
         
@@ -133,7 +132,7 @@ class VoiceCloner:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return f"{clean_name}_{timestamp}"
     
-    def get_model(self, model_id: str) -> Optional[Dict]:
+    def get_model(self, model_id: str) -> Optional[Dict[str, Any]]:
         """
         Get voice model information
         
@@ -145,11 +144,11 @@ class VoiceCloner:
         """
         return self.metadata["models"].get(model_id)
     
-    def get_all_models(self) -> List[Dict]:
+    def get_all_models(self) -> List[Dict[str, Any]]:
         """Get all available voice models"""
         return list(self.metadata["models"].values())
     
-    def delete_model(self, model_id: str) -> Dict:
+    def delete_model(self, model_id: str) -> Dict[str, Any]:
         """
         Delete a voice model
         
@@ -189,7 +188,7 @@ class VoiceCloner:
                 "error": str(e)
             }
     
-    def update_model_info(self, model_id: str, name: str = None, description: str = None) -> Dict:
+    def update_model_info(self, model_id: str, name: str = None, description: str = None) -> Dict[str, Any]:
         """
         Update voice model information
         
@@ -229,7 +228,7 @@ class VoiceCloner:
                 "error": str(e)
             }
     
-    def add_preset_voices(self):
+    def add_preset_voices(self) -> None:
         """Add preset celebrity/character voices (placeholder for future implementation)"""
         presets = [
             {

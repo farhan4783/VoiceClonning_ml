@@ -9,6 +9,27 @@ const api = axios.create({
     },
 });
 
+// Response interceptor for error handling
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.error('API Error:', error.response ? error.response.data : error.message);
+        if (error.response) {
+            // Server responded with a status code outside the 2xx range
+            const message = error.response.data.detail || 'An unexpected error occurred';
+            // You could trigger a toast notification here
+            // toast.error(message);
+            return Promise.reject(new Error(message));
+        } else if (error.request) {
+            // The request was made but no response was received
+            return Promise.reject(new Error('No response from server. Please check your connection.'));
+        } else {
+            // Something happened in setting up the request
+            return Promise.reject(error);
+        }
+    }
+);
+
 export const uploadVoice = async (audioFile, modelName, description = '') => {
     const formData = new FormData();
     formData.append('file', audioFile);
