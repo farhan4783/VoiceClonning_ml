@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 from typing import Optional
 import shutil
@@ -52,12 +52,8 @@ class ModelUpdateRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
-    return {
-        "message": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "status": "running"
-    }
+    """Redirect to API documentation"""
+    return RedirectResponse(url="/docs")
 
 @app.get("/health")
 async def health_check():
@@ -95,6 +91,18 @@ async def upload_voice(
             raise HTTPException(
                 status_code=400,
                 detail="Invalid file type. Supported: WAV, MP3, M4A, FLAC"
+            )
+        
+        # Validate file size (e.g., max 10MB)
+        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+        
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail="File too large. Maximum size is 10MB."
             )
         
         # Save uploaded file
